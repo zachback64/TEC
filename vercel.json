@@ -1,0 +1,9 @@
+{
+  "outputDirectory": ".",
+  "functions": {
+    "api/submit.js": {
+      "memory": 128,
+      "maxDuration": 5
+    }
+  }
+}

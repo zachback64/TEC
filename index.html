@@ -16,8 +16,8 @@
   --bg2:    #e8e4db;
   --surface:#e0dbd0;
   --ink:    #1a1814;
-  --mid:    rgba(26,24,20,0.5);
-  --dim:    rgba(26,24,20,0.3);
+  --mid:    rgba(26,24,20,0.8);
+  --dim:    rgba(26,24,20,0.6);
   --line:   rgba(26,24,20,0.1);
   --line2:  rgba(26,24,20,0.18);
   --orange: #d44c0d;
@@ -41,18 +41,18 @@ nav{
 .nav-org{
   display:flex;align-items:center;padding:0 28px;
   border-right:1px solid var(--line2);
-  font-size:9px;letter-spacing:0.3em;text-transform:uppercase;
+  font-size:11px;letter-spacing:0.3em;text-transform:uppercase;
   color:var(--orange);white-space:nowrap;
 }
 .nav-center{
   flex:1;display:flex;align-items:center;padding:0 28px;
-  font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:var(--dim);
+  font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:var(--dim);
 }
 .nav-links{display:flex;gap:0;list-style:none;margin-left:auto}
 .nav-links li{border-left:1px solid var(--line2)}
 .nav-links a{
   display:flex;align-items:center;height:48px;padding:0 20px;
-  font-size:9px;letter-spacing:0.12em;text-transform:uppercase;
+  font-size:11px;letter-spacing:0.12em;text-transform:uppercase;
   color:var(--mid);text-decoration:none;transition:color 0.12s,background 0.12s;
 }
 .nav-links a:hover{color:var(--ink);background:rgba(26,24,20,0.03)}
@@ -75,7 +75,7 @@ nav{
   border:1px solid var(--line2);width:fit-content;
 }
 .doc-tag{
-  padding:6px 14px;font-size:8px;letter-spacing:0.25em;text-transform:uppercase;
+  padding:6px 14px;font-size:10px;letter-spacing:0.25em;text-transform:uppercase;
   border-right:1px solid var(--line2);color:var(--dim);
 }
 .doc-tag:last-child{border-right:none}
@@ -135,8 +135,8 @@ h1 .green{color:var(--green)}
   position:absolute;bottom:0;left:0;right:0;padding:14px 18px;
   display:flex;justify-content:space-between;align-items:flex-end;
 }
-.photo-label-l{font-size:8px;letter-spacing:0.2em;text-transform:uppercase;color:var(--mid);line-height:1.5}
-.photo-label-r{font-family:var(--ser);font-style:italic;font-size:11px;color:var(--dim)}
+.photo-label-l{font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink);line-height:1.5}
+.photo-label-r{font-family:var(--ser);font-style:italic;font-size:13px;color:var(--mid)}
 
 /* SECTIONS */
 section{border-bottom:1px solid var(--line2)}
@@ -520,20 +520,39 @@ function stab(id,btn){
   btn.classList.add('on');
   document.getElementById('tp-'+id).classList.add('on');
 }
-function doN(){
+async function doN(){
   const p=document.getElementById('n-ph');
   if(!p.value||p.value.replace(/\D/g,'').length<7){p.style.borderColor='#d44c0d';return}
-  document.getElementById('nf').style.display='none';
-  document.getElementById('n-ok').classList.add('on');
+  const btn=document.querySelector('#nf .btn');
+  btn.disabled=true;btn.textContent='Transmitting…';
+  try{
+    const r=await fetch('/api/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'notify',phone:document.getElementById('n-ph').value,name:document.getElementById('n-nm').value,email:document.getElementById('n-em').value})});
+    if(!r.ok)throw new Error(await r.text());
+    document.getElementById('nf').style.display='none';
+    document.getElementById('n-ok').classList.add('on');
+  }catch(e){
+    btn.disabled=false;btn.textContent='Add to signal list →';
+    btn.style.background='#d44c0d';
+    btn.insertAdjacentHTML('afterend','<p style="font-size:11px;color:#d44c0d;margin-top:8px">Transmission failed — try again.</p>');
+  }
 }
-function doR(){
+async function doR(){
   const n=document.getElementById('r-nm'),p=document.getElementById('r-ph');
   let ok=true;
   if(!n.value){n.style.borderColor='#d44c0d';ok=false}
   if(!p.value||p.value.replace(/\D/g,'').length<7){p.style.borderColor='#d44c0d';ok=false}
   if(!ok)return;
-  document.getElementById('rf').style.display='none';
-  document.getElementById('r-ok').classList.add('on');
+  const btn=document.querySelector('#rf .btn');
+  btn.disabled=true;btn.textContent='Transmitting…';
+  try{
+    const r=await fetch('/api/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'apply',name:n.value,phone:p.value,email:document.getElementById('r-em').value,ref:document.getElementById('r-ref').value,notes:document.getElementById('r-nt').value})});
+    if(!r.ok)throw new Error(await r.text());
+    document.getElementById('rf').style.display='none';
+    document.getElementById('r-ok').classList.add('on');
+  }catch(e){
+    btn.disabled=false;btn.textContent='Submit application →';
+    btn.insertAdjacentHTML('afterend','<p style="font-size:11px;color:#d44c0d;margin-top:8px">Transmission failed — try again.</p>');
+  }
 }
 </script>
 </body>
